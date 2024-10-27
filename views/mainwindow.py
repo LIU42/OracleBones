@@ -1,12 +1,15 @@
 import cv2
 
-from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage
-from PyQt5.QtGui import QPainter
+from PyQt5.QtGui import QPixmap
 
-from PyQt5.QtWidgets import QAction
-from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QHBoxLayout
+from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QGraphicsScene
+from PyQt5.QtWidgets import QGraphicsView
 
 import views.languages as languages
 import inferences.inference as inference
@@ -17,9 +20,17 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.source_image = None
         self.output_image = None
+        self.output_scene = QGraphicsScene(self)
+
+        layout = QHBoxLayout(self)
+        layout.addWidget(QGraphicsView(self.output_scene, self))
+
+        central_widget = QWidget(self)
+        central_widget.setLayout(layout)
 
         self.setWindowTitle(languages.main_title)
-        self.setMinimumSize(640, 640)
+        self.setMinimumSize(680, 706)
+        self.setCentralWidget(central_widget)
 
         self.open_action = QAction(languages.open_action, self)
         self.save_action = QAction(languages.save_action, self)
@@ -45,13 +56,13 @@ class MainWindow(QMainWindow):
         help_menu.addAction(self.exit_action)
 
     @property
-    def converted_output_image(self):
+    def converted_output_pixmap(self):
         data = self.output_image.data
 
         w = self.output_image.shape[1]
         h = self.output_image.shape[0]
 
-        return QImage(data, w, h, QImage.Format_RGB888)
+        return QPixmap.fromImage(QImage(data, w, h, QImage.Format_RGB888))
 
     def inference(self):
         selected_path, _ = QFileDialog.getOpenFileName(self, languages.open_title, '.', languages.types_description)
@@ -62,6 +73,9 @@ class MainWindow(QMainWindow):
 
             self.source_image = cv2.imread(selected_path)
             self.output_image = inference.inference(self.source_image)
+
+            self.output_scene.clear()
+            self.output_scene.addPixmap(self.converted_output_pixmap)
 
             self.open_action.setEnabled(True)
             self.save_action.setEnabled(True)
@@ -77,10 +91,3 @@ class MainWindow(QMainWindow):
 
             self.open_action.setEnabled(True)
             self.save_action.setEnabled(True)
-
-    def paintEvent(self, _):
-        if self.output_image is not None:
-            image = self.converted_output_image.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-
-            painter = QPainter(self)
-            painter.drawImage((self.width() - image.width()) // 2, (self.height() - image.height()) // 2, image)
