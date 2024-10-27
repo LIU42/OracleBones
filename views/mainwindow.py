@@ -16,25 +16,25 @@ import inferences.inference as inference
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__()
         self.source_image = None
         self.output_image = None
-        self.output_scene = QGraphicsScene(self)
+        self.output_scene = QGraphicsScene()
 
-        layout = QHBoxLayout(self)
-        layout.addWidget(QGraphicsView(self.output_scene, self))
+        layout = QHBoxLayout()
+        layout.addWidget(QGraphicsView(self.output_scene))
 
-        central_widget = QWidget(self)
+        central_widget = QWidget()
         central_widget.setLayout(layout)
 
         self.setWindowTitle(languages.main_title)
         self.setMinimumSize(680, 706)
         self.setCentralWidget(central_widget)
 
-        self.open_action = QAction(languages.open_action, self)
-        self.save_action = QAction(languages.save_action, self)
-        self.exit_action = QAction(languages.exit_action, self)
+        self.open_action = QAction(languages.open_action)
+        self.save_action = QAction(languages.save_action)
+        self.exit_action = QAction(languages.exit_action)
 
         self.open_action.setShortcut('Ctrl+O')
         self.save_action.setShortcut('Ctrl+S')
@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
         return QPixmap.fromImage(QImage(data, w, h, QImage.Format_RGB888))
 
     def inference(self):
-        selected_path, _ = QFileDialog.getOpenFileName(self, languages.open_title, '.', languages.types_description)
+        selected_path, _ = QFileDialog.getOpenFileName(caption=languages.open_title, filter=languages.types_description)
 
         if selected_path.endswith(('.jpg', '.jpeg', '.png', '.bmp')):
             self.open_action.setEnabled(False)
@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
             self.save_action.setEnabled(True)
 
     def save(self):
-        selected_path, _ = QFileDialog.getSaveFileName(self, languages.save_title, '.', languages.types_description)
+        selected_path, _ = QFileDialog.getSaveFileName(caption=languages.save_title, filter=languages.types_description)
 
         if selected_path.endswith(('.jpg', '.jpeg', '.png', '.bmp')):
             self.open_action.setEnabled(False)
