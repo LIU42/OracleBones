@@ -74,3 +74,5 @@ character-codes:                 # 字符分类编码列表，包含所有字符
 ```bash
 pip install ultralytics
 ```
+
+
