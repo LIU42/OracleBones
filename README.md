@@ -56,8 +56,12 @@ python main.py
 
 ```yaml
 precision: "fp32"                # 推理运算精度，"fp32"（单精度）或 "fp16"（半精度）
-providers:                       # ONNX Runtime Providers 参数
+
+session-providers:               # ONNX Runtime Providers 参数
   - "CPUExecutionProvider"
+
+detection-model-path: "inferences/models/detection-fp32.onnx"    # 目标检测模型路径
+character-model-path: "inferences/models/character-fp32.onnx"    # 字符分类模型路径
 
 conf-threshold: 0.25             # 目标检测置信度阈值
 iou-threshold: 0.45              # 目标检测非极大值抑制 IoU 阈值
@@ -74,5 +78,3 @@ character-codes:                 # 字符分类编码列表，包含所有字符
 ```bash
 pip install ultralytics
 ```
-
-
