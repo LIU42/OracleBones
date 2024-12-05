@@ -164,3 +164,4 @@ checkpoints/*
 datasets/character/*
 datasets/detection/*
 inferences/models/*
+inferences/images/*

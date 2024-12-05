@@ -1,4 +1,5 @@
 import cv2
+import yaml
 
 from PyQt5.QtGui import QImage
 from PyQt5.QtGui import QPixmap
@@ -11,8 +12,11 @@ from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QGraphicsScene
 from PyQt5.QtWidgets import QGraphicsView
 
-import views.languages as languages
 import inferences.inference as inference
+
+
+with open('configs/languages.yaml', 'r', encoding='utf-8') as languages:
+    languages = yaml.load(languages, Loader=yaml.FullLoader)
 
 
 class MainWindow(QMainWindow):
@@ -28,13 +32,13 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         central_widget.setLayout(layout)
 
-        self.setWindowTitle(languages.main_title)
+        self.setWindowTitle(languages['main-title'])
         self.setMinimumSize(680, 706)
         self.setCentralWidget(central_widget)
 
-        self.open_action = QAction(languages.open_action)
-        self.save_action = QAction(languages.save_action)
-        self.exit_action = QAction(languages.exit_action)
+        self.open_action = QAction(languages['open-action'])
+        self.save_action = QAction(languages['save-action'])
+        self.exit_action = QAction(languages['exit-action'])
 
         self.open_action.setShortcut('Ctrl+O')
         self.save_action.setShortcut('Ctrl+S')
@@ -48,8 +52,8 @@ class MainWindow(QMainWindow):
 
         menuber = self.menuBar()
 
-        file_menu = menuber.addMenu(languages.file_menu)
-        help_menu = menuber.addMenu(languages.help_menu)
+        file_menu = menuber.addMenu(languages['file-menu'])
+        help_menu = menuber.addMenu(languages['help-menu'])
 
         file_menu.addAction(self.open_action)
         file_menu.addAction(self.save_action)
@@ -65,7 +69,7 @@ class MainWindow(QMainWindow):
         return QPixmap.fromImage(QImage(data, w, h, QImage.Format_RGB888))
 
     def inference(self):
-        selected_path, _ = QFileDialog.getOpenFileName(caption=languages.open_title, filter=languages.types_description)
+        selected_path, _ = QFileDialog.getOpenFileName(caption=languages['open-title'], filter=languages['types-description'])
 
         if selected_path.endswith(('.jpg', '.jpeg', '.png', '.bmp')):
             self.open_action.setEnabled(False)
@@ -81,7 +85,7 @@ class MainWindow(QMainWindow):
             self.save_action.setEnabled(True)
 
     def save(self):
-        selected_path, _ = QFileDialog.getSaveFileName(caption=languages.save_title, filter=languages.types_description)
+        selected_path, _ = QFileDialog.getSaveFileName(caption=languages['save-title'], filter=languages['types-description'])
 
         if selected_path.endswith(('.jpg', '.jpeg', '.png', '.bmp')):
             self.open_action.setEnabled(False)

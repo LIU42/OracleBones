@@ -1,9 +1,13 @@
 precision: "fp32"
-providers:
+
+session-providers:
   - "CPUExecutionProvider"
 
 conf-threshold: 0.25
 iou-threshold: 0.45
+
+detection-model-path: "inferences/models/detection-fp32.onnx"
+character-model-path: "inferences/models/character-fp32.onnx"
 
 character-codes:
   - "001000"

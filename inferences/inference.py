@@ -1,22 +1,14 @@
-import cv2
-import numpy as np
 import onnxruntime as ort
+import cv2
 import yaml
+import numpy as np
 
 
 with open('configs/inference.yaml', 'r') as configs:
     configs = yaml.load(configs, Loader=yaml.FullLoader)
 
-    precision = configs['precision']
-    providers = configs['providers']
-
-    conf_threshold = configs['conf-threshold']
-    iou_threshold = configs['iou-threshold']
-
-    character_codes = configs['character-codes']
-
-detection_session = ort.InferenceSession(f'inferences/models/detection-{precision}.onnx', providers=providers)
-character_session = ort.InferenceSession(f'inferences/models/character-{precision}.onnx', providers=providers)
+detection_session = ort.InferenceSession(configs['detection-model-path'], providers=configs['session-providers'])
+character_session = ort.InferenceSession(configs['character-model-path'], providers=configs['session-providers'])
 
 
 def letterbox(image, size, padding):
@@ -39,14 +31,14 @@ def preprocess(image):
     inputs = inputs / 255.0
     inputs = np.expand_dims(inputs, axis=0)
 
-    if precision == 'fp16':
+    if configs['precision'] == 'fp16':
         return inputs.astype(np.float16)
     else:
         return inputs.astype(np.float32)
     
 
 def get_valid_outputs(outputs):
-    valid_outputs = outputs[outputs[:, 4] > conf_threshold]
+    valid_outputs = outputs[outputs[:, 4] > configs['conf-threshold']]
 
     bboxes = valid_outputs[:, 0:4]
     scores = valid_outputs[:, 4]
@@ -60,7 +52,7 @@ def non_max_suppression(outputs):
     bboxes[:, 0] -= bboxes[:, 2] >> 1
     bboxes[:, 1] -= bboxes[:, 3] >> 1
 
-    for index in cv2.dnn.NMSBoxes(bboxes, scores, conf_threshold, iou_threshold, eta=0.5):
+    for index in cv2.dnn.NMSBoxes(bboxes, scores, configs['conf-threshold'], configs['iou-threshold'], eta=0.5):
         bboxes[index, 2] += bboxes[index, 0]
         bboxes[index, 3] += bboxes[index, 1]
 
@@ -80,15 +72,17 @@ def character_inference(character_area):
     outputs = outputs[0]
     outputs = outputs.squeeze()
 
-    return character_codes[np.argmax(outputs)]
+    return configs['character-codes'][np.argmax(outputs)]
 
 
 def paint_result(image, bbox, character_code):
-    point1 = bbox[0:2]
-    point2 = bbox[2:4]
+    x1 = bbox[0]
+    y1 = bbox[1]
+    x2 = bbox[2]
+    y2 = bbox[3]
 
-    image = cv2.rectangle(image, point1, point2, (0, 255, 0))
-    image = cv2.putText(image, character_code, point1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+    image = cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0))
+    image = cv2.putText(image, character_code, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 
     return image
 
